@@ -1,12 +1,12 @@
-FROM alpine:edge
-MAINTAINER Paul Smith <pa.ulsmith.net>
+FROM alpine:3.14
+LABEL maintainer="Ivelin Vasilev <ivasgo@gmail.com>"
 
 # Add repos
-RUN echo "http://dl-cdn.alpinelinux.org/alpine/edge/testing" >> /etc/apk/repositories
+#RUN echo "https://dl-cdn.alpinelinux.org/alpine/edge/releases/" >> /etc/apk/repositories
 
 # Add basics first
-RUN apk update && apk upgrade && apk add \
-	bash apache2 php7-apache2 curl ca-certificates openssl openssh git php7 php7-phar php7-json php7-iconv php7-openssl tzdata openntpd nano
+RUN apk update && apk upgrade && apk add bash apache2 php7-apache2 curl ca-certificates \
+openssl openssh git php7 php7-phar php7-json php7-iconv php7-openssl tzdata openntpd nano
 
 # Add Composer
 RUN curl -sS https://getcomposer.org/installer | php && mv composer.phar /usr/local/bin/composer
@@ -48,14 +48,14 @@ RUN apk add \
 	php7-fileinfo \
 	php7-ldap \
 	php7-apcu
-
-# Problems installing in above stack
+#
+## Problems installing in above stack
 RUN apk add php7-simplexml
-
+#
 RUN cp /usr/bin/php7 /usr/bin/php \
     && rm -f /var/cache/apk/*
-
-# Add apache to run and configure
+#
+## Add apache to run and configure
 RUN sed -i "s/#LoadModule\ rewrite_module/LoadModule\ rewrite_module/" /etc/apache2/httpd.conf \
     && sed -i "s/#LoadModule\ session_module/LoadModule\ session_module/" /etc/apache2/httpd.conf \
     && sed -i "s/#LoadModule\ session_cookie_module/LoadModule\ session_cookie_module/" /etc/apache2/httpd.conf \
@@ -64,10 +64,10 @@ RUN sed -i "s/#LoadModule\ rewrite_module/LoadModule\ rewrite_module/" /etc/apac
     && sed -i "s#^DocumentRoot \".*#DocumentRoot \"/app/public\"#g" /etc/apache2/httpd.conf \
     && sed -i "s#/var/www/localhost/htdocs#/app/public#" /etc/apache2/httpd.conf \
     && printf "\n<Directory \"/app/public\">\n\tAllowOverride All\n</Directory>\n" >> /etc/apache2/httpd.conf
-
+#
 RUN mkdir /app && mkdir /app/public && chown -R apache:apache /app && chmod -R 755 /app && mkdir bootstrap
 ADD start.sh /bootstrap/
 RUN chmod +x /bootstrap/start.sh
-
+#
 EXPOSE 80
 ENTRYPOINT ["/bootstrap/start.sh"]

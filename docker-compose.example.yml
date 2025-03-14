@@ -1,4 +1,3 @@
-version: "2"
 services:
   apache:
     build: ./
@@ -15,12 +14,14 @@ services:
       - PHP_XDEBUG_ENABLED=true
     networks:
       - default
+    ports:
+      - "${PORT_NUMBER:-8989}:80"
     volumes:
-      - ./public:/app
+      - ./public:/app/public
     cap_add:
       - SYS_TIME
       - SYS_NICE
+
 networks:
   default:
-    external:
-      name: docker_docker-localhost
+    driver: bridge
